@@ -31,11 +31,23 @@ namespace SQLiteDBManger
         {
             try
             {
-                StringBuilder InsertStatment = new StringBuilder();
-                InsertStatment.AppendFormat(@"INSERT INTO {0} VALUES({1})", tablename, String.Join(",", values));
-                SQLiteCommand Command = new SQLiteCommand(InsertStatment.ToString(), _connection);
-                _connection.Open();
-                Command.ExecuteNonQuery();                                
+                if (General.IsValidKeyValuePair(values))
+                {
+                    StringBuilder InsertStatment = new StringBuilder();
+                    object[] Columns = new object[values.Length / 2];
+                    object[] Data = new object[values.Length / 2];
+
+                    for (int Index = 0, IndexC = 0; Index < values.Length; Index++, IndexC++)
+                        Columns[IndexC] = values[Index++];
+
+                    for (int Index = 1, IndexC = 0; Index < values.Length; Index++, IndexC++)
+                        Data[IndexC] = values[Index++];
+
+                    InsertStatment.AppendFormat(@"INSERT INTO {0}({1}) VALUES({2})", tablename, String.Join(",", Columns), String.Join(",", Data));
+                    SQLiteCommand Command = new SQLiteCommand(InsertStatment.ToString(), _connection);
+                    _connection.Open();
+                    Command.ExecuteNonQuery();
+                }
             }
             catch (Exception E)
             {
@@ -187,7 +199,7 @@ namespace SQLiteDBManger
             try
             {
                 StringBuilder SelectStatment = new StringBuilder();
-                SelectStatment.AppendFormat(@"SELECT {0} FROM {1} {2}", field, tablename, String.IsNullOrEmpty(whereclause) ? string.Empty : whereclause);
+                SelectStatment.AppendFormat(@"SELECT {0} FROM {1} {2}", field, tablename, String.IsNullOrEmpty(whereclause) ? string.Empty : String.Concat("WHERE ", whereclause));
                 SQLiteCommand Command = new SQLiteCommand(SelectStatment.ToString(), _connection);                
                 _connection.Open();
                 Result = Command.ExecuteScalar();                
