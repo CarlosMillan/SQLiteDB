@@ -145,7 +145,7 @@ namespace SQLiteDBManger
         /// <param name="whereclause">Where clause whitout WHERE keyword</param>
         /// <param name="fields">Fields to query</param>
         /// <returns>Data result</returns>
-        public DataTable GetTable(string tablename, string whereclause, params object[] fields) 
+        public DataTable GetTable(string tablename, string whereclause, string additional, params object[] fields) 
         {
             DataTable Result = new DataTable();
 
@@ -153,10 +153,11 @@ namespace SQLiteDBManger
             {
                 string ToGet = String.Join(",", fields);
                 StringBuilder SelectStatment = new StringBuilder();
-                SelectStatment.AppendFormat(@"SELECT {0} FROM {1} {2}"
+                SelectStatment.AppendFormat(@"SELECT {0} FROM {1} {2} {3}"
                                              , String.IsNullOrEmpty(ToGet) ? "*" : ToGet
                                              , tablename
-                                             , String.IsNullOrEmpty(whereclause) ? string.Empty : whereclause);
+                                             , String.IsNullOrEmpty(whereclause) ? string.Empty : whereclause
+                                             , additional);
                 SQLiteCommand Command = new SQLiteCommand(SelectStatment.ToString().Trim(), _connection);                
                 SQLiteDataAdapter SQLiteAdapter = new SQLiteDataAdapter(Command);
                 _connection.Open();
@@ -178,11 +179,23 @@ namespace SQLiteDBManger
         /// Gets a table.
         /// </summary>
         /// <param name="tablename">Table's name</param>        
+        /// <param name="additional">For example: ORDER BY, GROUP BY and HAVING.</param>
         /// <param name="fields">Fields to query</param>
         /// <returns>Data result</returns>
+        public DataTable GetTable(string tablename, string additional, params object[] fields)
+        {
+            return GetTable(tablename, null, additional,fields);
+        }
+
+        /// <summary>
+        /// Gets a table
+        /// </summary>
+        /// <param name="tablename"></param>
+        /// <param name="fields"></param>
+        /// <returns></returns>
         public DataTable GetTable(string tablename, params object[] fields)
         {
-            return GetTable(tablename, null, fields);
+            return GetTable(tablename, null, null, fields);
         }
 
         /// <summary>
